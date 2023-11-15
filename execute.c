@@ -1,84 +1,19 @@
-/*  #include "shell.h"
-
- void custom_execute(const char *input) {
-    char *argv[MAX_ARGS];
-    pid_t child_pid = fork(); //create a child process
-
-    if (child_pid == -1) {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    } else if (child_pid == 0) {
-        // Child process
-        //execlp(input, input, (char *)NULL);
-        if (execve(input, argv, environ) == -1){
-        perror("execlp");
-        exit(EXIT_FAILURE);
-        }
-    } else {
-        // Parent process
-        wait(NULL);
-    }
-} */
-
-#/* include "shell.h"
-
-void custom_execute(const char *input) {
-    
-    pid_t child_pid;
-
-    // Parse the command and its arguments
-    char *argv[] = {"/bin/ls", "-l", NULL}; // Maximum 120 arguments (adjust as needed)
-    
-    //char **argv = malloc(3 * sizeof(char *));
-    int argc = 0;
-    int val;
-
-    child_pid = fork();
-
-    if (child_pid == -1) {
-        my_print("Error forking process.\n");
-        exit(EXIT_FAILURE);
-    } else if (child_pid == 0) {
-        // Child process
-
-       
-
-        char *token = strtok((char *)input, " ");
-        while (token != NULL) {
-            argv[argc++] = token;
-            token = strtok(NULL, " ");
-        }
-        argv[argc] = NULL; // Null-terminate the arguments array
-
-        // Execute the command
-        val = execve(argv[0], argv, environ);
-
-        if (val == -1){
-            perror("Error");
-        }
-
-        // If execvp fails, print an error message
-        //my_print("Error executing command.\n");
-        //exit(EXIT_FAILURE);
-    } else {
-        // Parent process
-        wait(NULL);
-    }
-} */
-
 #include "shell.h"
 
+/**
+ * custom_execute - Execute commands from input
+ * @input: Command input string
+ * @success: Pointer to success flag
+ */
 void custom_execute(char *input, int *success)
 {
     pid_t child_pid;
     int i, j = 0;
-    // Tokenize the command into individual commands
     char *commands[MAX_ARGS];
     int commandCount = 0;
     char *token = strtok(input, "&&||");
     char *path = getenv("PATH");
     char *pathCopy = strdup(path);
-    //char *dir = strtok(pathCopy, ":");
     int commandFound = 0;
     int lastExitStatus;
 
@@ -88,6 +23,7 @@ void custom_execute(char *input, int *success)
         return;
     }
 
+    // Tokenize the command into individual commands
     while (token != NULL && commandCount < MAX_ARGS - 1)
     {
         commands[commandCount++] = token;
@@ -230,7 +166,6 @@ void custom_execute(char *input, int *success)
             }
 
             // Check if the command exists in the PATH
-
             if (path == NULL)
             {
                 fprintf(stderr, "Error: PATH environment variable not set.\n");
@@ -243,62 +178,47 @@ void custom_execute(char *input, int *success)
                 exit(EXIT_FAILURE);
             }
 
-            //while (dir != NULL)
-            //{
-                // Construct the full path to the command
-                //char fullPath[MAX_INPUT_LENGTH];
-                //snprintf(fullPath, sizeof(fullPath), "%s/%s", dir, argv[0]);
+            commandFound = 1;
+            // Fork a new process
+            child_pid = fork();
 
-                // Check if the file is executable
-                //if (access(fullPath, X_OK) == 0)
-                //{
-                    commandFound = 1;
-                    // Fork a new process
-                    child_pid = fork();
+            if (child_pid == -1)
+            {
+                perror("fork");
+                exit(EXIT_FAILURE);
+            }
 
-                    if (child_pid == -1)
-                    {
-                        perror("fork");
-                        exit(EXIT_FAILURE);
-                    }
+            if (child_pid == 0)
+            {
+                // Child process
+                // Execute the command with execve
+                if (execve(argv[0], argv, environ) == -1)
+                {
+                    // Handle command not found
+                    perror("execve");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                // Parent process
+                // Wait for the child to complete
+                int status;
+                waitpid(child_pid, &status, 0);
 
-                    if (child_pid == 0)
-                    {
-                        // Child process
-                        // Execute the command with execve
-                        if (execve(argv[0], argv, environ) == -1)
-                        {
-                            // Handle command not found
-                            perror("execve");
-                            exit(EXIT_FAILURE);
-                        }
-                    }
-                    else
-                    {
-                        // Parent process
-                        // Wait for the child to complete
-                        int status;
-                        waitpid(child_pid, &status, 0);
-
-                        if (WIFEXITED(status))
-                        {
-                            // Child process exited normally
-                            lastExitStatus = WEXITSTATUS(status);
-                            *success = lastExitStatus == 0;
-                        }
-                        else if (WIFSIGNALED(status))
-                        {
-                            // Child process terminated by a signal
-                            printf("Child process terminated by signal %d\n", WTERMSIG(status));
-                            *success = 0;
-                        }
-                    }
-
-                   // break; // Exit the loop after executing the command
-                //}
-
-                //dir = strtok(NULL, ":");
-            //}
+                if (WIFEXITED(status))
+                {
+                    // Child process exited normally
+                    lastExitStatus = WEXITSTATUS(status);
+                    *success = lastExitStatus == 0;
+                }
+                else if (WIFSIGNALED(status))
+                {
+                    // Child process terminated by a signal
+                    printf("Child process terminated by signal %d\n", WTERMSIG(status));
+                    *success = 0;
+                }
+            }
 
             free(pathCopy);
 

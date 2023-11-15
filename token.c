@@ -1,8 +1,13 @@
 #include "shell.h"
 
+/**
+ * tokenize - Tokenize input string into arguments
+ * @input: Input string to tokenize
+ * @argv: Array to store the arguments
+ * Return: Number of arguments
+ */
 int tokenize(char *input, char *argv[])
 {
-
     // Parse the command and its arguments
     // char *argv[MAX_INPUT_LENGTH];
     int argc = 0;
@@ -19,5 +24,5 @@ int tokenize(char *input, char *argv[])
 
     argv[argc] = NULL; // Null-terminate the arguments array
 
-    return (argc);
+    return argc;
 }

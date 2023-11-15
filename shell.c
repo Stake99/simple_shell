@@ -1,18 +1,25 @@
 #include "shell.h"
-/*
- *
- */
 
+/**
+ * main - Entry point for the shell program
+ * @argc: Number of command line arguments
+ * @argv: Array of command line arguments
+ *
+ * Return: 0 on success, EXIT_FAILURE on failure
+ */
 int main(int argc, char *argv[])
 {
     FILE *file = stdin; // Default to stdin
     char input[MAX_INPUT_LENGTH];
+    int success = 1;
 
+    // Function prototypes
     int tokenize(char *input, char *argv[]);
     int cd(char *directory);
     int my_setenv(char *variable, char *value);
     int my_unsetenv(char *variable);
-    int success = 1;
+    void display_prompt(void);
+    void custom_execute(char *input, int *success);
 
     if (argc > 2)
     {
@@ -36,10 +43,9 @@ int main(int argc, char *argv[])
     {
         display_prompt();
         read_command(input, sizeof(input));
-        // void custom_execute(char *command, int *success);
 
+        // Execute the custom command
         custom_execute(input, &success);
-        //custom_execute(input);
 
         // Check if the success flag is set
         if (!success)

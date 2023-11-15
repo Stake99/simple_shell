@@ -1,9 +1,16 @@
 #include "shell.h"
 
+/**
+ * read_command - Read a command from the standard input
+ * @input: Buffer to store the input command
+ * @size: Size of the input buffer
+ */
 void read_command(char *input, size_t size)
 {
+    // Read input from standard input using fgets
     if (fgets(input, size, stdin) == NULL)
     {
+        // Check for end-of-file
         if (feof(stdin))
         {
             my_print("\n");
@@ -15,20 +22,7 @@ void read_command(char *input, size_t size)
             exit(EXIT_FAILURE);
         }
     }
-    input[strcspn(input, "\n")] = '\0'; // Remove newline
+
+    // Remove newline character from the input
+    input[strcspn(input, "\n")] = '\0';
 }
-
-// #include "shell.h"
-
-// void read_command(char *command, size_t size) {
-//     if (fgets(command, size, stdin) == NULL) {
-//         if (feof(stdin)) {
-//             leo_print("\n");
-//             exit(EXIT_SUCCESS);
-//         } else {
-//             leo_print("Error while reading input.\n");
-//             exit(EXIT_FAILURE);
-//         }
-//     }
-//     command[strcspn(command, "\n")] = '\0'; // Remove newline
-// }
